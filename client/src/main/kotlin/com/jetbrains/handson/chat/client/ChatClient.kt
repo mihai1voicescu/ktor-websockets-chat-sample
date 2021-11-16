@@ -1,11 +1,14 @@
 package com.jetbrains.handson.chat.client
 
 import io.ktor.client.*
+import io.ktor.client.features.auth.*
+import io.ktor.client.features.auth.providers.*
 import io.ktor.client.features.websocket.*
 import io.ktor.http.*
 import io.ktor.http.cio.websocket.*
-import io.ktor.util.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 suspend fun DefaultClientWebSocketSession.outputMessages() {
     try {
@@ -35,6 +38,13 @@ suspend fun DefaultClientWebSocketSession.inputMessages() {
 fun main() {
     val client = HttpClient {
         install(WebSockets)
+        install(Auth) {
+            basic {
+                credentials {
+                    BasicAuthCredentials(username = "user", password = "user")
+                }
+            }
+        }
     }
     runBlocking {
         client.webSocket(method = HttpMethod.Get, host = "127.0.0.1", port = 8080, path = "/chat") {
